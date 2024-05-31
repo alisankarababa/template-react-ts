@@ -2,35 +2,38 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Button, TextField } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useFormik } from 'formik';
+import { useLocalStorage } from 'usehooks-ts'
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
-
-
+const keyPhoneBook = "phonebook";
 
 interface ContactFormProps {
     setIsContactFormOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    contact?: Contact;
+    contactToBeEdited?: Contact;
     setContactToBeEdited?: React.Dispatch<React.SetStateAction<Contact | null>>;
 }
 
-function ContactForm({setIsContactFormOpen, contact, setContactToBeEdited}: ContactFormProps) {
+function ContactForm({setIsContactFormOpen, contactToBeEdited, setContactToBeEdited}: ContactFormProps) {
+
+    const [contactList, setContactList] = useLocalStorage<Contact[]>(keyPhoneBook, [], undefined)
 
     const formik = useFormik({
         initialValues: {
-            name: contact?.name ?? "",
-            surname: contact?.surname ?? "",
-            phonenumber:contact?.phonenumber ?? ""
+            name: contactToBeEdited?.name ?? "",
+            surname: contactToBeEdited?.surname ?? "",
+            phonenumber:contactToBeEdited?.phonenumber ?? ""
         },  
         onSubmit: (values) => {
-            let contactList: Contact[] = JSON.parse(localStorage.getItem("phonebook") || "[]");
+            let newContactList: Contact[] = [...contactList];
 
-            if(contact) {
+            if(contactToBeEdited) {
                 
-                contactList = contactList.map( (contactListItem) => {
+                newContactList = contactList.map( (contactListItem) => {
                     
-                    if(contactListItem.id == contact.id) {
+                    if(contactListItem.id == contactToBeEdited.id) {
                         contactListItem.name = values.name;
                         contactListItem.surname = values.surname;
                         contactListItem.phonenumber = values.phonenumber;
@@ -40,7 +43,7 @@ function ContactForm({setIsContactFormOpen, contact, setContactToBeEdited}: Cont
                 })
             } else {
                 
-                contactList.push({
+                newContactList.push({
                     id: contactList.length,
                     name: values.name,
                     surname: values.surname,
@@ -48,7 +51,7 @@ function ContactForm({setIsContactFormOpen, contact, setContactToBeEdited}: Cont
                 })
             }
 
-            localStorage.setItem("phonebook", JSON.stringify(contactList));
+            setContactList(newContactList);
 
             if(setContactToBeEdited) {
                 setContactToBeEdited(null);
@@ -103,20 +106,16 @@ interface Contact {
 export default function DataGridDemo() {
 
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [contactList, setContactList] = useLocalStorage<Contact[]>(keyPhoneBook, [], undefined)
+
 
     const [ contactToBeEdited, setContactToBeEdited ] = useState<Contact | null>(null);
-    const [ contactList, setContactList ] = useState([]);
-
-    useEffect(() => {
-        const contactListFromLocalStorage = JSON.parse(localStorage.getItem("phonebook") || "[]");
-        setContactList(contactListFromLocalStorage);
-    }, [isFormOpen, contactToBeEdited])
 
     if(contactToBeEdited) {
         return(
-            <ContactForm 
+            <ContactForm
                 setIsContactFormOpen={setIsFormOpen}
-                contact={contactToBeEdited}
+                contactToBeEdited={contactToBeEdited}
                 setContactToBeEdited={setContactToBeEdited}
             />
         );
@@ -161,6 +160,16 @@ export default function DataGridDemo() {
                             surname: cellValues.row.surname,
                             phonenumber: cellValues.row.phonenumber,
                         })
+                }/>
+              );
+          }
+        },
+        {
+          field: 'delete',
+          renderCell: (cellValues) => {
+              return (
+                  <DeleteIcon onClick={
+                    () => setContactList((prev) => [...prev].filter((contact) => contact.id !== cellValues.id))
                 }/>
               );
           }
