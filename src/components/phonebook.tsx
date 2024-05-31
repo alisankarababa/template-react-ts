@@ -2,7 +2,7 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Button, TextField } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFormik } from 'formik';
 
 const columns: GridColDef<(typeof rows)[number]>[] = [
@@ -12,7 +12,7 @@ const columns: GridColDef<(typeof rows)[number]>[] = [
     width: 150,
   },
   {
-    field: 'lastName',
+    field: 'surname',
     headerName: 'Surname',
     width: 150,
   },
@@ -21,18 +21,6 @@ const columns: GridColDef<(typeof rows)[number]>[] = [
     headerName: 'Phonenumber',
     width: 150,
   },
-];
-
-const rows = [
-  { id: 1, lastName: 'Snow', name: 'Jon', phonenumber:"0000000" },
-  { id: 2, lastName: 'Lannister', name: 'Cersei', phonenumber:"0000000" },
-  { id: 3, lastName: 'Lannister', name: 'Jaime', phonenumber:"0000000" },
-  { id: 4, lastName: 'Stark', name: 'Arya', phonenumber:"0000000" },
-  { id: 5, lastName: 'Targaryen', name: 'Daenerys', phonenumber:"0000000" },
-  { id: 6, lastName: 'Melisandre', name: null, phonenumber:"0000000" },
-  { id: 7, lastName: 'Clifford', name: 'Ferrara', phonenumber:"0000000" },
-  { id: 8, lastName: 'Frances', name: 'Rossini', phonenumber:"0000000" },
-  { id: 9, lastName: 'Roxie', name: 'Harvey', phonenumber:"0000000" },
 ];
 
 interface ContactFormProps {
@@ -98,6 +86,12 @@ function ContactForm({setIsContactFormOpen}: ContactFormProps) {
 export default function DataGridDemo() {
 
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [ contactList, setContactList ] = useState([]);
+
+    useEffect(() => {
+        const contactListFromLocalStorage = JSON.parse(localStorage.getItem("phonebook") || "[]");
+        setContactList(contactListFromLocalStorage);
+    }, [])
 
     if(isFormOpen) {
         return(
@@ -109,7 +103,7 @@ export default function DataGridDemo() {
     <Box sx={{ height: 400, width: '100%' }}>
         <Button onClick={() => setIsFormOpen(true)}>New</Button>
       <DataGrid
-        rows={rows}
+        rows={contactList}
         columns={columns}
         initialState={{
           pagination: {
