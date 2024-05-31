@@ -4,15 +4,13 @@ import Toolbar from '@mui/material/Toolbar';
 import TemporaryDrawer from './side_menu';
 
 
-export default function Header() {
-
-
+export default function Header({setPhoneBookOpen}) {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="fixed">
         <Toolbar>
-            <TemporaryDrawer />
+            <TemporaryDrawer setPhoneBookOpen={setPhoneBookOpen}/>
         </Toolbar>
       </AppBar>
     </Box>

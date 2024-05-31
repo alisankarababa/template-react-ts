@@ -1,9 +1,15 @@
+import { useState } from 'react'
 import Header from './components/header'
 
 function App() {
 
+    const [phoneBookOpen, setPhoneBookOpen] = useState(false);
+
   return (
-        <Header/>
+    <div>
+        <Header setPhoneBookOpen={setPhoneBookOpen}/>
+        {phoneBookOpen && <DataGridDemo />}
+    </div>
   )
 }
 
