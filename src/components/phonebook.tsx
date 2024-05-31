@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { useFormik } from 'formik';
 import { useLocalStorage } from 'usehooks-ts'
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const keyPhoneBook = "phonebook";
 
@@ -109,12 +110,6 @@ export default function DataGridDemo() {
 
 
     const [ contactToBeEdited, setContactToBeEdited ] = useState<Contact | null>(null);
-    const [ contactList, setContactList ] = useState([]);
-
-    useEffect(() => {
-        const contactListFromLocalStorage = JSON.parse(localStorage.getItem("phonebook") || "[]");
-        setContactList(contactListFromLocalStorage);
-    }, [isFormOpen, contactToBeEdited])
 
     if(contactToBeEdited) {
         return(
@@ -167,6 +162,16 @@ export default function DataGridDemo() {
                             surname: cellValues.row.surname,
                             phonenumber: cellValues.row.phonenumber,
                         })
+                }/>
+              );
+          }
+        },
+        {
+          field: 'delete',
+          renderCell: (cellValues) => {
+              return (
+                  <DeleteIcon onClick={
+                    () => setContactList((prev) => [...prev].filter((contact) => contact.id !== cellValues.id))
                 }/>
               );
           }
