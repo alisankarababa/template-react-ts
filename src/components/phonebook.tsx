@@ -12,13 +12,13 @@ const keyPhoneBook = "phonebook";
 
 interface ContactFormProps {
     setIsContactFormOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    setContactList: React.Dispatch<React.SetStateAction<Contact[]>>;
-    contactList: Contact[],
     contactToBeEdited?: Contact;
     setContactToBeEdited?: React.Dispatch<React.SetStateAction<Contact | null>>;
 }
 
-function ContactForm({setIsContactFormOpen, setContactList, contactList, contactToBeEdited, setContactToBeEdited}: ContactFormProps) {
+function ContactForm({setIsContactFormOpen, contactToBeEdited, setContactToBeEdited}: ContactFormProps) {
+
+    const [contactList, setContactList] = useLocalStorage<Contact[]>(keyPhoneBook, [], undefined)
 
     const formik = useFormik({
         initialValues: {
@@ -113,10 +113,8 @@ export default function DataGridDemo() {
 
     if(contactToBeEdited) {
         return(
-            <ContactForm 
+            <ContactForm
                 setIsContactFormOpen={setIsFormOpen}
-                setContactList={setContactList}
-                contactList={contactList}
                 contactToBeEdited={contactToBeEdited}
                 setContactToBeEdited={setContactToBeEdited}
             />
@@ -125,7 +123,7 @@ export default function DataGridDemo() {
 
     if(isFormOpen) {
         return(
-            <ContactForm contactList={contactList} setContactList={setContactList} setIsContactFormOpen={setIsFormOpen}/>
+            <ContactForm setIsContactFormOpen={setIsFormOpen}/>
         )
     }
 
