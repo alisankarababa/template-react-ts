@@ -4,46 +4,56 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Button, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useFormik } from 'formik';
+import EditIcon from '@mui/icons-material/Edit';
 
-const columns: GridColDef<(typeof rows)[number]>[] = [
-  {
-    field: 'name',
-    headerName: 'Name',
-    width: 150,
-  },
-  {
-    field: 'surname',
-    headerName: 'Surname',
-    width: 150,
-  },
-  {
-    field: 'phonenumber',
-    headerName: 'Phonenumber',
-    width: 150,
-  },
-];
+
+
 
 interface ContactFormProps {
     setIsContactFormOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    contact?: Contact;
+    setContactToBeEdited?: React.Dispatch<React.SetStateAction<Contact | null>>;
 }
 
-function ContactForm({setIsContactFormOpen}: ContactFormProps) {
+function ContactForm({setIsContactFormOpen, contact, setContactToBeEdited}: ContactFormProps) {
 
     const formik = useFormik({
         initialValues: {
-            name: "",
-            surname:"",
-            phonenumber:""
-        },
+            name: contact?.name ?? "",
+            surname: contact?.surname ?? "",
+            phonenumber:contact?.phonenumber ?? ""
+        },  
         onSubmit: (values) => {
-            const contactList = JSON.parse(localStorage.getItem("phonebook") || "[]");
-            contactList.push({
-                id: contactList.length,
-                name: values.name,
-                surname: values.surname,
-                phonenumber: values.phonenumber
-            })
+            let contactList: Contact[] = JSON.parse(localStorage.getItem("phonebook") || "[]");
+
+            if(contact) {
+                
+                contactList = contactList.map( (contactListItem) => {
+                    
+                    if(contactListItem.id == contact.id) {
+                        contactListItem.name = values.name;
+                        contactListItem.surname = values.surname;
+                        contactListItem.phonenumber = values.phonenumber;
+                    }
+                    
+                    return contactListItem;
+                })
+            } else {
+                
+                contactList.push({
+                    id: contactList.length,
+                    name: values.name,
+                    surname: values.surname,
+                    phonenumber: values.phonenumber
+                })
+            }
+
             localStorage.setItem("phonebook", JSON.stringify(contactList));
+
+            if(setContactToBeEdited) {
+                setContactToBeEdited(null);
+            }
+
             setIsContactFormOpen(false);
         },
     });
@@ -83,21 +93,80 @@ function ContactForm({setIsContactFormOpen}: ContactFormProps) {
     );
 }
 
+interface Contact {
+    id: number,
+    name: string;
+    surname: string;
+    phonenumber:string;
+}
+
 export default function DataGridDemo() {
 
     const [isFormOpen, setIsFormOpen] = useState(false);
+
+    const [ contactToBeEdited, setContactToBeEdited ] = useState<Contact | null>(null);
     const [ contactList, setContactList ] = useState([]);
 
     useEffect(() => {
         const contactListFromLocalStorage = JSON.parse(localStorage.getItem("phonebook") || "[]");
         setContactList(contactListFromLocalStorage);
-    }, [])
+    }, [isFormOpen, contactToBeEdited])
+
+    if(contactToBeEdited) {
+        return(
+            <ContactForm 
+                setIsContactFormOpen={setIsFormOpen}
+                contact={contactToBeEdited}
+                setContactToBeEdited={setContactToBeEdited}
+            />
+        );
+    }
 
     if(isFormOpen) {
         return(
             <ContactForm setIsContactFormOpen={setIsFormOpen}/>
         )
     }
+
+    const columns: GridColDef<(Contact[])[number]>[] = [
+        {
+            field: 'id',
+            headerName: "Id",
+            width: 150,
+        },
+        {
+          field: 'name',
+          headerName: 'Name',
+          width: 150,
+        },
+        {
+          field: 'surname',
+          headerName: 'Surname',
+          width: 150,
+        },
+        {
+          field: 'phonenumber',
+          headerName: 'Phonenumber',
+          width: 150,
+        },
+        {
+          field: 'edit',
+          renderCell: (cellValues) => {
+              return (
+                  <EditIcon onClick={
+                    () => 
+                        setContactToBeEdited({
+                            id: cellValues.row.id,
+                            name: cellValues.row.name,
+                            surname: cellValues.row.surname,
+                            phonenumber: cellValues.row.phonenumber,
+                        })
+                }/>
+              );
+          }
+        }
+      ];
+
 
   return (
     <Box sx={{ height: 400, width: '100%' }}>
